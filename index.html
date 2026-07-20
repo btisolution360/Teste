@@ -65,7 +65,7 @@
     const loadingMsg = document.getElementById('loading-msg');
 
     // Carrega o arquivo
-    pdfjsLib.getDocument(Portifolio.pdf).promise.then(pdf => {
+    pdfjsLib.getDocument(NOME_DO_ARQUIVO_PDF).promise.then(pdf => {
       // Remove mensagem de carregando
       loadingMsg.remove();
 

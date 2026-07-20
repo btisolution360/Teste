@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizador de PDF</title>
+  
+  <!-- Biblioteca PDF.js via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #2c2c2e;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    
+    #pdf-container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* O canvas força cada página do PDF a se adaptar à largura da tela do celular */
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
+      background: white;
+    }
+
+    .loading {
+      color: white;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="pdf-container">
+    <div class="loading" id="loading-msg">Carregando documento...</div>
+  </div>
+
+  <script>
+    // 1. ATENÇÃO: Troque para o NOME EXATO do seu arquivo PDF
+    const NOME_DO_ARQUIVO_PDF = 'Portifolio.pdf'; 
+
+    // Configuração do motor do PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const container = document.getElementById('pdf-container');
+    const loadingMsg = document.getElementById('loading-msg');
+
+    // Carrega o arquivo
+    pdfjsLib.getDocument(Portifolio.pdf).promise.then(pdf => {
+      // Remove mensagem de carregando
+      loadingMsg.remove();
+
+      // Renderiza todas as páginas uma abaixo da outra
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        pdf.getPage(pageNum).then(page => {
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          
+          // Escala 2 para ter ótima resolução no celular sem ficar embaçado
+          const viewport = page.getViewport({ scale: 2 });
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          container.appendChild(canvas);
+
+          page.render({
+            canvasContext: context,
+            viewport: viewport
+          });
+        });
+      }
+    }).catch(err => {
+      loadingMsg.style.color = '#ff6b6b';
+      loadingMsg.innerHTML = 'Erro ao abrir o PDF.<br><small>Verifique se o nome do arquivo no código está igual ao arquivo enviado.</small>';
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
